@@ -1,20 +1,21 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFrameworks>net45;net46;netstandard2.0</TargetFrameworks>
-    <Version>4.4.14</Version>
+    <TargetFrameworks>net45;net46;netstandard2.0;netcoreapp3.1</TargetFrameworks>
+    <Version>4.5.1</Version>
     <PackageId>OpenXmlPowerTools-saberwang</PackageId>
-    <Authors>saberwang,Eric White</Authors>
-    <Description>分叉自https://github.com/EricWhiteDev/Open-Xml-PowerTools，并修复WmlToHtmlConverter的部分bug</Description>
-    <RepositoryUrl>https://github.com/saber-wang/Open-Xml-PowerTools</RepositoryUrl>
-    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-    <PackageReleaseNotes>分叉自https://github.com/EricWhiteDev/Open-Xml-PowerTools，并修复WmlToHtmlConverter的部分bug</PackageReleaseNotes>
+    <Authors>gigahunter,saberwang,Eric White</Authors>
+    <Description>fork from https://github.com/saber-wang/Open-Xml-PowerTools, and merge image code to DocumentAssembler from
+https://github.com/Drin27/Open-Xml-PowerTools</Description>
+    <RepositoryUrl>https://github.com/gigahunter/Open-Xml-PowerTools</RepositoryUrl>
+    <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
+    <PackageReleaseNotes></PackageReleaseNotes>
     <PackageLicenseUrl>https://github.com/saber-wang/Open-Xml-PowerTools/blob/vNext/LICENSE</PackageLicenseUrl>
-    <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
-    <PackageProjectUrl>https://github.com/saber-wang/Open-Xml-PowerTools</PackageProjectUrl>
+    <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
+    <PackageProjectUrl>https://github.com/gigahunter/Open-Xml-PowerTools</PackageProjectUrl>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="DocumentFormat.OpenXml" Version="2.8.1" />
+    <PackageReference Include="DocumentFormat.OpenXml" Version="2.10.0" />
   </ItemGroup>
 
   <ItemGroup Condition=" '$(TargetFramework)' == 'net45'">
@@ -29,6 +30,14 @@
   </ItemGroup>
 
   <ItemGroup Condition=" '$(TargetFramework)' == 'netstandard2.0'">
-    <PackageReference Include="System.Drawing.Common" Version="4.5.0" />
+    <PackageReference Include="System.Drawing.Common" Version="4.7.0" />
+  </ItemGroup>
+  
+  <ItemGroup Condition=" '$(TargetFramework)' == 'netcoreapp3.1'">
+    <PackageReference Include="System.Drawing.Common" Version="4.7.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Update="StyleCop.Analyzers" Version="1.1.118" />
   </ItemGroup>
 </Project>
