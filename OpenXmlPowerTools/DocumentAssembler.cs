@@ -623,89 +623,90 @@ namespace OpenXmlPowerTools
                     {
                         PA.Content,
                         new PASchemaSet() {
-                            XsdMarkup =
+                            XsdMarkup = string.Format(
                               @"<xs:schema attributeFormDefault='unqualified' elementFormDefault='qualified' xmlns:xs='http://www.w3.org/2001/XMLSchema'>
-                                  <xs:element name='Content'>
+                                  <xs:element name='{0}'>
                                     <xs:complexType>
-                                      <xs:attribute name='Select' type='xs:string' use='required' />
-                                      <xs:attribute name='Optional' type='xs:boolean' use='optional' />
+                                      <xs:attribute name='{1}' type='xs:string' use='required' />
+                                      <xs:attribute name='{2}' type='xs:boolean' use='optional' />
                                     </xs:complexType>
                                   </xs:element>
-                                </xs:schema>",
+                                </xs:schema>", PA.Content, PA.Select, PA.Optional),
                         }
                     },
                     {
                         PA.Table,
                         new PASchemaSet() {
-                            XsdMarkup =
+                            XsdMarkup = string.Format(
                               @"<xs:schema attributeFormDefault='unqualified' elementFormDefault='qualified' xmlns:xs='http://www.w3.org/2001/XMLSchema'>
-                                  <xs:element name='Table'>
+                                  <xs:element name='{0}'>
                                     <xs:complexType>
-                                      <xs:attribute name='Select' type='xs:string' use='required' />
+                                      <xs:attribute name='{1}' type='xs:string' use='required' />
+                                      <xs:attribute name='{2}' type='xs:integer' use='optional' />
                                     </xs:complexType>
                                   </xs:element>
-                                </xs:schema>",
+                                </xs:schema>", PA.Table, PA.Select, PA.DataLine),
                         }
                     },
                     {
                         PA.Repeat,
                         new PASchemaSet() {
-                            XsdMarkup =
+                            XsdMarkup = string.Format(
                               @"<xs:schema attributeFormDefault='unqualified' elementFormDefault='qualified' xmlns:xs='http://www.w3.org/2001/XMLSchema'>
-                                  <xs:element name='Repeat'>
+                                  <xs:element name='{0}'>
                                     <xs:complexType>
-                                      <xs:attribute name='Select' type='xs:string' use='required' />
-                                      <xs:attribute name='Optional' type='xs:boolean' use='optional' />
-                                      <xs:attribute name='Align' type='xs:string' use='optional' />
+                                      <xs:attribute name='{1}' type='xs:string' use='required' />
+                                      <xs:attribute name='{2}' type='xs:boolean' use='optional' />
+                                      <xs:attribute name='{3}' type='xs:string' use='optional' />
                                     </xs:complexType>
                                   </xs:element>
-                                </xs:schema>",
+                                </xs:schema>", PA.Repeat, PA.Select, PA.Optional, PA.Align),
                         }
                     },
                     {
                         PA.EndRepeat,
                         new PASchemaSet() {
-                            XsdMarkup =
+                            XsdMarkup = string.Format(
                               @"<xs:schema attributeFormDefault='unqualified' elementFormDefault='qualified' xmlns:xs='http://www.w3.org/2001/XMLSchema'>
-                                  <xs:element name='EndRepeat' />
-                                </xs:schema>",
+                                  <xs:element name='{0}' />
+                                </xs:schema>", PA.EndRepeat),
                         }
                     },
                     {
                         PA.Conditional,
                         new PASchemaSet() {
-                            XsdMarkup =
+                            XsdMarkup = string.Format(
                               @"<xs:schema attributeFormDefault='unqualified' elementFormDefault='qualified' xmlns:xs='http://www.w3.org/2001/XMLSchema'>
-                                  <xs:element name='Conditional'>
+                                  <xs:element name='{0}'>
                                     <xs:complexType>
-                                      <xs:attribute name='Select' type='xs:string' use='required' />
-                                      <xs:attribute name='Match' type='xs:string' use='optional' />
-                                      <xs:attribute name='NotMatch' type='xs:string' use='optional' />
+                                      <xs:attribute name='{1}' type='xs:string' use='required' />
+                                      <xs:attribute name='{2}' type='xs:string' use='optional' />
+                                      <xs:attribute name='{3}' type='xs:string' use='optional' />
                                     </xs:complexType>
                                   </xs:element>
-                                </xs:schema>",
+                                </xs:schema>", PA.Conditional, PA.Select, PA.Match, PA.NotMatch),
                         }
                     },
                     {
                         PA.EndConditional,
                         new PASchemaSet() {
-                            XsdMarkup =
+                            XsdMarkup = string.Format(
                               @"<xs:schema attributeFormDefault='unqualified' elementFormDefault='qualified' xmlns:xs='http://www.w3.org/2001/XMLSchema'>
-                                  <xs:element name='EndConditional' />
-                                </xs:schema>",
+                                  <xs:element name='{0}' />
+                                </xs:schema>", PA.EndConditional),
                         }
                     },
                     {
                         PA.Image,
                         new PASchemaSet() {
-                            XsdMarkup =
+                            XsdMarkup = string.Format(
                               @"<xs:schema attributeFormDefault='unqualified' elementFormDefault='qualified' xmlns:xs='http://www.w3.org/2001/XMLSchema'>
-                                  <xs:element name='Image'>
+                                  <xs:element name='{0}'>
                                     <xs:complexType>
-                                      <xs:attribute name='Select' type='xs:string' use='required' />
+                                      <xs:attribute name='{1}' type='xs:string' use='required' />
                                     </xs:complexType>
                                   </xs:element>
-                                </xs:schema>",
+                                </xs:schema>", PA.Image, PA.Select),
                         }
                     }
                 };
@@ -734,7 +735,7 @@ namespace OpenXmlPowerTools
             return null;
         }
 
-        private class PA
+        public class PA
         {
             public static XName Image = "Image";
             public static XName Content = "Content";
@@ -750,6 +751,8 @@ namespace OpenXmlPowerTools
             public static XName NotMatch = "NotMatch";
             public static XName Depth = "Depth";
             public static XName Align = "Align";
+
+            public static XName DataLine = "DataLine";
         }
 
         private class PASchemaSet
@@ -1268,11 +1271,21 @@ namespace OpenXmlPowerTools
 
                     if (para != null)
                     {
-                        XElement p = new XElement(W.p, para.Elements(W.pPr));
+                        XElement p = new XElement(W.p, para.Attributes(), para.Elements(W.pPr));
+                        XElement rPr = null;
+                        var pPr = para.Elements(W.pPr).FirstOrDefault();
+                        if (pPr != null)
+                        {
+                            rPr = pPr.Elements(W.rPr).FirstOrDefault();
+                        }
+                        if (rPr == null)
+                        {
+                            rPr = para.Elements(W.r).Elements(W.rPr).FirstOrDefault();
+                        }
+
                         foreach (string line in newValue.Split('\n'))
                         {
-                            p.Add(new XElement(W.r,
-                                    para.Elements(W.r).Elements(W.rPr).FirstOrDefault(),
+                            p.Add(new XElement(W.r, rPr,
                                 (p.Elements().Count() > 1) ? new XElement(W.br) : null,
                                 new XElement(W.t, GetXmlSpaceAttribute(line), line)));
                         }
@@ -1368,24 +1381,35 @@ namespace OpenXmlPowerTools
                     {
                         return CreateContextErrorMessage(element, "XPathException: " + e.Message, templateError);
                     }
+                    /*
                     if (tableData.Count() == 0)
                         return CreateContextErrorMessage(element, "Table Select returned no data", templateError);
-                    XElement table = element.Element(W.tbl);
-                    var elms = table.Elements(W.tr);
-                    XElement protoRow;
-                    bool hasHeader = true;
-                    if (elms.Count() > 1)
-                        protoRow = elms.Skip(1).FirstOrDefault();   //Header
-                    else
+                    */
+
+                    var dataLine = 1;
+                    var att = (string)element.Attribute(PA.DataLine);
+                    if (att != null)
                     {
-                        hasHeader = false;
-                        protoRow = elms.FirstOrDefault();
+                        dataLine = int.Parse(att);
                     }
 
-                    var footerRowsBeforeTransform = table
-                        .Elements(W.tr)
-                        .Skip(2)
-                        .ToList();
+                    XElement table = element.Element(W.tbl);
+                    var elmsTr = table.Elements(W.tr);
+                    XElement protoRow;
+                    List<object> header = null;
+                    if (elmsTr.Count() > 1)
+                    {
+                        protoRow = elmsTr.Skip(dataLine).FirstOrDefault();   //skip Header
+                        var list = elmsTr.Take(dataLine).ToList();
+                        header = list.Select(x => ContentReplacementTransform(x, data, templateError, part)).ToList();
+                    }
+                    else
+                    {
+                        dataLine = 0;
+                        protoRow = elmsTr.FirstOrDefault();
+                    }
+
+                    var footerRowsBeforeTransform = elmsTr.Skip(dataLine + 1).ToList();
                     var footerRows = footerRowsBeforeTransform
                         .Select(x => ContentReplacementTransform(x, data, templateError, part))
                         .ToList();
@@ -1395,7 +1419,7 @@ namespace OpenXmlPowerTools
                     protoRow.Descendants(W.bookmarkEnd).Remove();
                     XElement newTable = new XElement(W.tbl,
                         table.Elements().Where(e => e.Name != W.tr),
-                        hasHeader ? table.Elements(W.tr).FirstOrDefault() : null,
+                        header,
                         tableData.Select(d =>
                             new XElement(W.tr,
                                 protoRow.Elements().Where(r => r.Name != W.tc),
@@ -1419,10 +1443,17 @@ namespace OpenXmlPowerTools
 
                                         XElement cellRun = paragraph.Elements(W.r).FirstOrDefault();
                                         string xPath = paragraph.Value;
+                                        string color = null;
                                         string newValue = null;
                                         try
                                         {
                                             newValue = EvaluateXPathToString(d, xPath, false);
+                                            var vvv = Regex.Split(newValue, "/C/");
+                                            if (vvv.Length > 1)
+                                            {
+                                                newValue = vvv[0];
+                                                color = vvv[1];
+                                            }
                                         }
                                         catch (XPathException e)
                                         {
@@ -1440,7 +1471,7 @@ namespace OpenXmlPowerTools
                                                        paragraph.Element(W.pPr),
                                                        new XElement(W.r,
                                                            cellRun != null ? cellRun.Element(W.rPr) : new XElement(W.rPr),  //if the cell was empty there is no cellrun
-                                                           new XElement(W.t, newValue))));
+                                                           color == null ? new XElement(W.t, newValue) : CreateColorMessage(newValue, color))));    //set font color
                                         return newCell;
                                     }))),
                                     footerRows
@@ -1492,6 +1523,14 @@ namespace OpenXmlPowerTools
                 return new XElement(W.p, errorRun);
             else
                 return errorRun;
+        }
+
+        private static XElement CreateColorMessage(string message, string color)
+        {
+            return new XElement(W.r,
+                new XElement(W.rPr,
+                    new XElement(W.color, new XAttribute(W.val, color))),
+                    new XElement(W.t, message));
         }
 
         private static XElement CreateRunErrorMessage(string errorMessage, TemplateError templateError)
