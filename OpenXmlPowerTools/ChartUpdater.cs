@@ -1,14 +1,15 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+using DocumentFormat.OpenXml.Packaging;
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
-using System.Text;
 using System.Xml.Linq;
-using DocumentFormat.OpenXml.Packaging;
-using OpenXmlPowerTools;
+using Chart = DocumentFormat.OpenXml.Drawing.Charts.Chart;
+using Paragraph = DocumentFormat.OpenXml.Drawing.Paragraph;
+using Run = DocumentFormat.OpenXml.Drawing.Run;
+using Text = DocumentFormat.OpenXml.Drawing.Text;
 
 namespace OpenXmlPowerTools
 {
@@ -58,6 +59,8 @@ namespace OpenXmlPowerTools
         public string[] CategoryNames;
 
         public double[][] Values;
+
+        public string Title;
     }
 
     public class ChartUpdater
@@ -95,6 +98,39 @@ namespace OpenXmlPowerTools
             }
 
             UpdateSeries(chartPart, chartData);
+
+            if (string.IsNullOrEmpty(chartData.Title) == false)
+            {
+                var chart = chartPart.ChartSpace.GetFirstChild<Chart>();
+                if (chart != null)
+                {
+                    Paragraph para = chart.Title.ChartText.RichText.GetFirstChild<Paragraph>();
+
+                    if (para != null)
+                    {
+                        List<Run> runList = new List<Run>();
+                        foreach (var elm in para.ChildElements)
+                        {
+                            if (elm is Run)
+                            {
+                                runList.Add((Run)elm);
+                            }
+                        }
+
+                        for (int i = runList.Count - 1; i >= 1; i--)
+                        {
+                            runList[i].Remove();
+                        }
+
+                        if (runList.Count > 0)
+                        {
+                            var run = runList[0];
+                            var text = run.GetFirstChild<Text>();
+                            run.ReplaceChild((new Text(chartData.Title)), text);
+                        }
+                    }
+                }
+            }
         }
 
         private static Dictionary<int, string> FormatCodes = new Dictionary<int, string>()
@@ -135,6 +171,8 @@ namespace OpenXmlPowerTools
 
             XDocument cpXDoc = chartPart.GetXDocument();
             XElement root = cpXDoc.Root;
+            var series = root.Descendants(C.ser).ToArray();
+            var seriesSize = series.Count();
             var firstSeries = root.Descendants(C.ser).FirstOrDefault();
             var numRef = firstSeries.Elements(C.val).Elements(C.numRef).FirstOrDefault();
             string sheetName = null;
@@ -149,9 +187,11 @@ namespace OpenXmlPowerTools
             var newSetOfSeries = chartData.SeriesNames
                 .Select((string sn, int si) =>
                 {
+                    var ser = series[si % seriesSize];
+
                     XElement cat = null;
 
-                    var oldCat = firstSeries.Elements(C.cat).FirstOrDefault();
+                    var oldCat = ser.Elements(C.cat).FirstOrDefault();
                     if (oldCat == null)
                         throw new OpenXmlPowerToolsException("Invalid chart markup");
 
@@ -256,7 +296,7 @@ namespace OpenXmlPowerTools
                                         }))));
                     }
 
-                    var serHasFormula = firstSeries.Descendants(C.f).Any();
+                    var serHasFormula = ser.Descendants(C.f).Any();
                     XElement tx = null;
                     if (serHasFormula)
                     {
@@ -287,17 +327,17 @@ namespace OpenXmlPowerTools
                             new XElement(C.idx, new XAttribute("val", si)),
                             new XElement(C.order, new XAttribute("val", si)),
                             tx,
-                            firstSeries.Elements(C.spPr),
+                            ser.Elements(C.spPr),
 
                             // CT_AreaSer
-                            firstSeries.Elements(C.pictureOptions),
-                            firstSeries.Elements(C.dPt),
-                            firstSeries.Elements(C.dLbls),
-                            firstSeries.Elements(C.trendline),
-                            firstSeries.Elements(C.errBars),
+                            ser.Elements(C.pictureOptions),
+                            ser.Elements(C.dPt),
+                            ser.Elements(C.dLbls),
+                            ser.Elements(C.trendline),
+                            ser.Elements(C.errBars),
                             cat,
                             newCval,
-                            firstSeries.Elements(C.extLst));
+                            ser.Elements(C.extLst));
                     }
                     else if (chartType == C.bar3DChart || chartType == C.barChart)
                     {
@@ -306,19 +346,19 @@ namespace OpenXmlPowerTools
                             new XElement(C.idx, new XAttribute("val", si)),
                             new XElement(C.order, new XAttribute("val", si)),
                             tx,
-                            firstSeries.Elements(C.spPr),
+                            ser.Elements(C.spPr),
 
                             // CT_BarSer
-                            firstSeries.Elements(C.invertIfNegative),
-                            firstSeries.Elements(C.pictureOptions),
-                            firstSeries.Elements(C.dPt),
-                            firstSeries.Elements(C.dLbls),
-                            firstSeries.Elements(C.trendline),
-                            firstSeries.Elements(C.errBars),
+                            ser.Elements(C.invertIfNegative),
+                            ser.Elements(C.pictureOptions),
+                            ser.Elements(C.dPt),
+                            ser.Elements(C.dLbls),
+                            ser.Elements(C.trendline),
+                            ser.Elements(C.errBars),
                             cat,
                             newCval,
-                            firstSeries.Elements(C.shape),
-                            firstSeries.Elements(C.extLst));
+                            ser.Elements(C.shape),
+                            ser.Elements(C.extLst));
                     }
                     else if (chartType == C.line3DChart || chartType == C.lineChart || chartType == C.stockChart)
                     {
@@ -327,18 +367,18 @@ namespace OpenXmlPowerTools
                             new XElement(C.idx, new XAttribute("val", si)),
                             new XElement(C.order, new XAttribute("val", si)),
                             tx,
-                            firstSeries.Elements(C.spPr),
+                            ser.Elements(C.spPr),
 
                             // CT_LineSer
-                            firstSeries.Elements(C.marker),
-                            firstSeries.Elements(C.dPt),
-                            firstSeries.Elements(C.dLbls),
-                            firstSeries.Elements(C.trendline),
-                            firstSeries.Elements(C.errBars),
+                            ser.Elements(C.marker),
+                            ser.Elements(C.dPt),
+                            ser.Elements(C.dLbls),
+                            ser.Elements(C.trendline),
+                            ser.Elements(C.errBars),
                             cat,
                             newCval,
-                            firstSeries.Elements(C.smooth),
-                            firstSeries.Elements(C.extLst));
+                            ser.Elements(C.smooth),
+                            ser.Elements(C.extLst));
                     }
                     else if (chartType == C.doughnutChart || chartType == C.ofPieChart || chartType == C.pie3DChart || chartType == C.pieChart)
                     {
@@ -347,15 +387,15 @@ namespace OpenXmlPowerTools
                             new XElement(C.idx, new XAttribute("val", si)),
                             new XElement(C.order, new XAttribute("val", si)),
                             tx,
-                            firstSeries.Elements(C.spPr),
+                            ser.Elements(C.spPr),
 
                             // CT_PieSer
-                            firstSeries.Elements(C.explosion),
-                            firstSeries.Elements(C.dPt),
-                            firstSeries.Elements(C.dLbls),
+                            ser.Elements(C.explosion),
+                            ser.Elements(C.dPt),
+                            ser.Elements(C.dLbls),
                             cat,
                             newCval,
-                            firstSeries.Elements(C.extLst));
+                            ser.Elements(C.extLst));
                     }
                     else if (chartType == C.surface3DChart || chartType == C.surfaceChart)
                     {
@@ -364,12 +404,12 @@ namespace OpenXmlPowerTools
                             new XElement(C.idx, new XAttribute("val", si)),
                             new XElement(C.order, new XAttribute("val", si)),
                             tx,
-                            firstSeries.Elements(C.spPr),
+                            ser.Elements(C.spPr),
 
                             // CT_SurfaceSer
                             cat,
                             newCval,
-                            firstSeries.Elements(C.extLst));
+                            ser.Elements(C.extLst));
                     }
 
                     if (newSer == null)
@@ -427,7 +467,7 @@ namespace OpenXmlPowerTools
                         var firstRow = new XElement(S.row,
                             new XAttribute("r", "1"),
                             new XAttribute("spans", string.Format("1:{0}", chartData.SeriesNames.Length + 1)),
-                            new [] { new XElement(S.c,
+                            new[] { new XElement(S.c,
                                 new XAttribute("r", "A1"),
                                 new XAttribute("t", "str"),
                                 new XElement(S.v,
